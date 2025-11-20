@@ -18,5 +18,5 @@ RUN ./mvnw -DoutputFile=target/mvn-dependency-list.log -B -DskipTests clean depe
  
  
 # Run the app by dynamically finding the JAR file in the target directory
-# CMD ["sh", "-c", "java -jar target/*.jar"]
-CMD ["sh", "-c", "java -jar build/libs/njdemo-0.0.1-SNAPSHOT.jar"]
+CMD ["sh", "-c", "java -jar target/*.jar"]
+#CMD ["sh", "-c", "java -jar build/libs/njdemo-0.0.1-SNAPSHOT.jar"]
