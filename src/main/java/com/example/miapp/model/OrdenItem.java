@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data // Lombok genera getters/setters/toString/etc.
 @NoArgsConstructor // Constructor vacío
 @AllArgsConstructor
-@Table(name="orden_items") // Constructor con todos los campos
+@Table(name="orden_items") 
 public class OrdenItem {
 
    @Id
@@ -32,7 +32,7 @@ public class OrdenItem {
     @JoinColumn(name = "producto_id", nullable = false)
     private Producto producto;
 
-    // Copias de nombre/precio para resiliencia histórica
+
     private String nombre;
 
     private Integer cantidad;

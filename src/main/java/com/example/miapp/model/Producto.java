@@ -10,11 +10,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity // Esta clase se convierte en tabla
-@Data // Lombok genera getters/setters/toString/etc.
-@NoArgsConstructor // Constructor vacío
+@Entity 
+@Data 
+@NoArgsConstructor 
 @AllArgsConstructor
-@Table(name="productos") // Constructor con todos los campos
+@Table(name="productos") // 
 public class Producto {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

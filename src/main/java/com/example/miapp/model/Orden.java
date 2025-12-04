@@ -22,14 +22,14 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor // Constructor vacío
 @AllArgsConstructor 
 @Table(name="orden")
-// Constructor con todos los campos
+
 public class Orden {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Usuario puede ser null si se permite orden anónima; recomendado exigir login
+    
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
@@ -43,7 +43,6 @@ public class Orden {
     @Column(name = "total")
     private Double total;
 
-    // Direccion y datos del comprador (copias para inmutabilidad de la orden)
     @Column(name = "nombre_completo")
     private String nombreCompleto;
 

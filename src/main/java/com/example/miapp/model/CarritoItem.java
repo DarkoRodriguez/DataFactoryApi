@@ -22,28 +22,29 @@ import lombok.NoArgsConstructor;
 @Entity // Esta clase se convierte en tabla
 @Table(name = "carrito_items")
 public class CarritoItem {
-  
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-    // Puede ser null si es carrito anónimo
+
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "usuario_id")
+
   private Usuario usuario;
 
-    // Para carritos anónimos (localStorage/session)
+
   private String sessionId;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "producto_id")
   private Producto producto;
 
-    // Copias para resiliencia (si el producto cambia)
+
   private String nombre;
+
   private String imagen;
 
-    
   private Double precio;
 
   private Integer cantidad ;

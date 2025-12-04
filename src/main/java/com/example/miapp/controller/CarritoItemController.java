@@ -3,6 +3,7 @@ package com.example.miapp.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -79,13 +80,44 @@ public class CarritoItemController {
     @PostMapping
     public ResponseEntity<CarritoItemResponse> createCarritoItem(@RequestBody CarritoItemRequest req) {
 
+        // 1) Validación mínima: se requiere producto_id (CarritoItemRequest.getProductoId() resuelve wrappers)
+        Long productoId = req.getProductoId();
+        if (productoId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "producto_id es requerido");
+        }
+
+        // 2) Resolver Producto
+        Producto producto = productoRepo.findById(productoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no existe: " + productoId));
+
+        // 3) Resolver Usuario si viene usuarioId
+        Usuario usuario = null;
+        if (req.getUsuarioId() != null) {
+            usuario = usuarioRepo.findById(req.getUsuarioId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario no existe: " + req.getUsuarioId()));
+        }
+
+        // 4) Construir entidad y poblar campos
         CarritoItem ci = new CarritoItem();
+        ci.setProducto(producto);
+        if (usuario != null) ci.setUsuario(usuario);
+        ci.setSessionId(req.getSessionId());
+        ci.setCantidad(req.getCantidad() != null ? req.getCantidad() : 1);
+        ci.setNombre(req.getNombre());
+        ci.setImagen(req.getImagen());
+        ci.setPrecio(req.getPrecio());
 
-        applyRequestToEntity(req, ci);
-
-        CarritoItem saved = carritoRepo.save(ci);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
+        // 5) Guardar protegiendo errores de BD
+        try {
+            CarritoItem saved = carritoRepo.save(ci);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
+        } catch (DataAccessException dae) {
+            // Retornar 500 con mensaje de causa específica para debug (no en producción revelar stack completo)
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al persistir carrito_item: " + (dae.getMostSpecificCause() != null ? dae.getMostSpecificCause().getMessage() : dae.getMessage()), dae);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error inesperado: " + e.getMessage(), e);
+        }
     }
 
     @Operation(summary = "Actualizar un item del carrito")
@@ -113,14 +145,14 @@ public class CarritoItemController {
         @ApiResponse(responseCode = "404", description = "Item no encontrado")
     })
     @DeleteMapping("/{id}")
-        public ResponseEntity<?> deleteCarritoItem(@PathVariable Long id) {
+    public ResponseEntity<?> deleteCarritoItem(@PathVariable Long id) {
         return carritoRepo.findById(id)
                 .map(existing -> {
-                        carritoRepo.delete(existing);
-                        return ResponseEntity.noContent().build();
+                    carritoRepo.delete(existing);
+                    return ResponseEntity.noContent().build();
                 })
                 .orElse(ResponseEntity.notFound().build());
-        }
+    }
 
     // --- Helpers ---
 
@@ -141,7 +173,7 @@ public class CarritoItemController {
     }
 
     private void applyRequestToEntity(CarritoItemRequest req, CarritoItem ci) {
-        // Campos simples
+        // Mantenemos comportamiento previo para PUT/patch parcial
         if (req.getCantidad() != null) {
             ci.setCantidad(req.getCantidad());
         }
@@ -154,19 +186,14 @@ public class CarritoItemController {
         if (req.getPrecio() != null) {
             ci.setPrecio(req.getPrecio());
         }
-        // sessionId (para anónimos)
         if (req.getSessionId() != null) {
             ci.setSessionId(req.getSessionId());
         }
-
-        // Si se envía productoId -> asignar relación Producto
         if (req.getProductoId() != null) {
             Producto prod = productoRepo.findById(req.getProductoId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no existe"));
             ci.setProducto(prod);
         }
-
-        // Si se envía usuarioId -> asignar relación Usuario
         if (req.getUsuarioId() != null) {
             Usuario u = usuarioRepo.findById(req.getUsuarioId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Usuario no existe"));
