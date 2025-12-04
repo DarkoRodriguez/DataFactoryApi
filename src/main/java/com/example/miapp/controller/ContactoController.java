@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -38,10 +40,7 @@ public class ContactoController {
         this.contactoRepository = contactoRepository;
     }
 
-
-
-
-    
+    @PostMapping
     @Operation(summary = "Crear contacto", description = "Crea un nuevo mensaje de contacto.")
     @ApiResponses({
         @ApiResponse(responseCode = "201", description = "Contacto creado",
@@ -49,7 +48,14 @@ public class ContactoController {
         @ApiResponse(responseCode = "400", description = "Datos inválidos")
     })
     public ResponseEntity<ContactoResponse> createContacto(
-            @Valid @org.springframework.web.bind.annotation.RequestBody ContactoRequest req) {
+            @Valid
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Payload para crear un contacto",
+                required = true,
+                content = @Content(schema = @Schema(implementation = ContactoRequest.class))
+            )
+            @org.springframework.web.bind.annotation.RequestBody ContactoRequest req) {
+
         Contacto c = new Contacto();
         c.setNombre(req.getNombre());
         c.setEmail(req.getEmail());
@@ -58,6 +64,35 @@ public class ContactoController {
         ContactoResponse resp = new ContactoResponse(saved.getId(), saved.getNombre(), saved.getEmail(),
                 saved.getMensaje(), saved.getFechaCreacion());
         return ResponseEntity.created(URI.create("/api/v1/contacto/" + saved.getId())).body(resp);
+    }
+
+    @PutMapping("/{id}")
+    @Operation(summary = "Actualizar contacto", description = "Actualiza un mensaje de contacto existente.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "Contacto actualizado",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ContactoResponse.class))),
+        @ApiResponse(responseCode = "404", description = "Contacto no encontrado"),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    })
+    public ResponseEntity<ContactoResponse> updateContacto(
+            @Parameter(description = "ID del contacto", required = true) @PathVariable Long id,
+            @Valid
+            @io.swagger.v3.oas.annotations.parameters.RequestBody(
+                description = "Payload para actualizar contacto",
+                required = true,
+                content = @Content(schema = @Schema(implementation = ContactoRequest.class))
+            )
+            @org.springframework.web.bind.annotation.RequestBody ContactoRequest req) {
+
+        return contactoRepository.findById(id).map(existing -> {
+            existing.setNombre(req.getNombre());
+            existing.setEmail(req.getEmail());
+            existing.setMensaje(req.getMensaje());
+            Contacto saved = contactoRepository.save(existing);
+            ContactoResponse resp = new ContactoResponse(saved.getId(), saved.getNombre(), saved.getEmail(),
+                    saved.getMensaje(), saved.getFechaCreacion());
+            return ResponseEntity.ok(resp);
+        }).orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @Operation(summary = "Listar contactos", description = "Devuelve todos los mensajes de contacto.")
@@ -87,12 +122,6 @@ public class ContactoController {
                         c.getFechaCreacion())))
                 .orElseGet(() -> ResponseEntity.notFound().build());
     }
-
-
-    
-
-
-
 
     @Operation(summary = "Eliminar contacto", description = "Elimina un mensaje de contacto por su identificador.")
     @ApiResponses({
