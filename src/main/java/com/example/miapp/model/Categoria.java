@@ -1,5 +1,6 @@
 package com.example.miapp.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "categorias")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Categoria {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
