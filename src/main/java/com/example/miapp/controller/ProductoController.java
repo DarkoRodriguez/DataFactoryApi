@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.miapp.model.Producto;
+import com.example.miapp.model.Categoria;
 import com.example.miapp.repository.ProductoRepository;
+import com.example.miapp.repository.CategoriaRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -26,11 +28,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 @CrossOrigin(origins = "*") // Permite peticiones desde frontend
 public class ProductoController {
 
-    private final ProductoRepository productoRepository;
+        private final ProductoRepository productoRepository;
+        private final CategoriaRepository categoriaRepository;
 
-    public ProductoController(ProductoRepository productoRepository) {
-        this.productoRepository = productoRepository;
-    }
+        public ProductoController(ProductoRepository productoRepository, CategoriaRepository categoriaRepository) {
+                this.productoRepository = productoRepository;
+                this.categoriaRepository = categoriaRepository;
+        }
 
     // Obtener todos los productos
     @GetMapping
@@ -67,7 +71,14 @@ public class ProductoController {
                             schema = @Schema(implementation = Producto.class)))
     })
     public Producto createproducto(@RequestBody Producto producto) {
-        return productoRepository.save(producto);
+                // resolve categoria relation if id provided
+                Categoria cat = null;
+                if (producto.getCategoria() != null && producto.getCategoria().getId() != null) {
+                        cat = categoriaRepository.findById(producto.getCategoria().getId())
+                                        .orElseThrow(() -> new RuntimeException("categoria not found"));
+                        producto.setCategoria(cat);
+                }
+                return productoRepository.save(producto);
     }
 
     // Actualizar producto existente
@@ -82,8 +93,12 @@ public class ProductoController {
     public Producto updateproducto(@PathVariable Long id, @RequestBody Producto productoDetails) {
         Producto producto = productoRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("producto not found"));
-        producto.setId(productoDetails.getId());
-        producto.setCategoria(productoDetails.getCategoria());
+                // update categoria relation if provided
+                if (productoDetails.getCategoria() != null && productoDetails.getCategoria().getId() != null) {
+                        Categoria cat = categoriaRepository.findById(productoDetails.getCategoria().getId())
+                                        .orElseThrow(() -> new RuntimeException("categoria not found"));
+                        producto.setCategoria(cat);
+                }
         producto.setDescripcion(productoDetails.getDescripcion());
         producto.setDescuento(productoDetails.getDescuento());
         producto.setImagen(productoDetails.getImagen());
