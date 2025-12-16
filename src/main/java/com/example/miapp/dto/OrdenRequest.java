@@ -1,8 +1,10 @@
 package com.example.miapp.dto;
 
+import java.util.List;
+
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty; // <-- Importante añadir esta línea
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OrdenRequest {
@@ -29,6 +31,10 @@ public class OrdenRequest {
     private String region;
     private String comuna;
     private String indicaciones;
+
+    // --- EL CAMPO QUE FALTABA ---
+    // Este campo recibirá la lista de items del JSON que envía la app.
+    private List<OrdenItemRequest> items;
 
     public OrdenRequest() { }
 
@@ -68,4 +74,8 @@ public class OrdenRequest {
 
     public String getIndicaciones() { return indicaciones; }
     public void setIndicaciones(String indicaciones) { this.indicaciones = indicaciones; }
+
+    // --- GETTER Y SETTER PARA LA LISTA DE ITEMS ---
+    public List<OrdenItemRequest> getItems() { return items; }
+    public void setItems(List<OrdenItemRequest> items) { this.items = items; }
 }

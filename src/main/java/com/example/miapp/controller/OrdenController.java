@@ -16,11 +16,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.example.miapp.dto.OrdenItemRequest;
 import com.example.miapp.dto.OrdenRequest;
 import com.example.miapp.dto.OrdenResponse;
 import com.example.miapp.model.Orden;
+import com.example.miapp.model.OrdenItem;
+import com.example.miapp.model.Producto;
 import com.example.miapp.model.Usuario;
 import com.example.miapp.repository.OrdenRepository;
+import com.example.miapp.repository.ProductoRepository;
 import com.example.miapp.repository.UsuarioRepository;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,12 +40,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @Tag(name = "Orden", description = "Operaciones sobre órdenes")
 public class OrdenController {
 
+    private final ProductoRepository productoRepository;
+
     private final OrdenRepository ordenRepository;
     private final UsuarioRepository usuarioRepository;
 
-    public OrdenController(OrdenRepository ordenRepository, UsuarioRepository usuarioRepository) {
+    public OrdenController(OrdenRepository ordenRepository, UsuarioRepository usuarioRepository, ProductoRepository productoRepository) {
         this.ordenRepository = ordenRepository;
         this.usuarioRepository = usuarioRepository;
+        this.productoRepository = productoRepository; 
     }
 
     @GetMapping
@@ -87,6 +94,21 @@ public class OrdenController {
         orden.setEstado(req.getEstado() != null ? req.getEstado() : "PENDIENTE");
         orden.setTotal(req.getTotal());
         orden.setNombreCompleto(req.getNombreCompleto());
+        if (req.getItems() != null) {
+        for (OrdenItemRequest itemReq : req.getItems()) {
+                OrdenItem item = new OrdenItem();
+                Producto producto = productoRepository.findById(itemReq.getProductoId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Producto no existe: " + itemReq.getProductoId()));
+                item.setProducto(producto);
+                item.setNombre(itemReq.getNombre());
+                item.setCantidad(itemReq.getCantidad());
+                item.setPrecioUnitario(itemReq.getPrecioUnitario());
+                item.setSubtotal(itemReq.getSubtotal());
+
+                // ¡Y AÑADIRLO A LA ORDEN!
+                orden.addOrdenItem(item);
+           }
+       }
         orden.setApellidos(req.getApellidos());
         orden.setCorreo(req.getCorreo());
         orden.setCalle(req.getCalle());
