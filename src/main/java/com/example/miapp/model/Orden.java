@@ -59,6 +59,12 @@ public class Orden {
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL , orphanRemoval = true)
     private List<OrdenItem> items;
 
-    
+    public void setItems(List<OrdenItem> items) {
+    this.items = items;
+    if (items != null) {
+        for(OrdenItem item : items) {  item.setOrden(this); // <-- ¡ESTA LÍNEA ES LA MAGIA!
+        }
+    }
+}
 }
 

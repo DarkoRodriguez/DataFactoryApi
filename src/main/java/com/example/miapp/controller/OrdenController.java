@@ -94,7 +94,7 @@ public class OrdenController {
         orden.setRegion(req.getRegion());
         orden.setComuna(req.getComuna());
         orden.setIndicaciones(req.getIndicaciones());
-
+        
         // Si se envía usuarioId -> asignar relación Usuario
         if (req.getUsuarioId() != null) {
             Usuario usuario = usuarioRepository.findById(req.getUsuarioId())
