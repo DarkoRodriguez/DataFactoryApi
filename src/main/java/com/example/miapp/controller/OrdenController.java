@@ -124,6 +124,21 @@ public class OrdenController {
             orden.setUsuario(usuario);
         }
 
+        for (OrdenItem item : orden.getItems()) {
+        Producto producto = item.getProducto();
+        int cantidadComprada = item.getCantidad();
+
+        if (producto.getStock() < cantidadComprada) {
+                // Si no hay suficiente stock, lanzar un error y no crear la orden.
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock insuficiente para el producto: " + producto.getNombre());
+        }
+
+        producto.setStock(producto.getStock() - cantidadComprada);
+        productoRepository.save(producto); // ¡Guardar el cambio en el producto!
+        }
+
+
+
         Orden saved = ordenRepository.save(orden);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(saved));
     }
