@@ -1,5 +1,6 @@
 package com.example.miapp.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -60,7 +61,7 @@ public class Orden {
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL , orphanRemoval = true)
     @JsonManagedReference
-    private List<OrdenItem> items;
+    private List<OrdenItem> items = new ArrayList<>();
 
     public void setItems(List<OrdenItem> items) {
     this.items = items;
