@@ -102,7 +102,7 @@ public class UsuarioController {
             usr.setFechaCreacion(usuario.getFechaCreacion());
             usr.setRegion(usuario.getRegion());
             usr.setTelefono(usuario.getTelefono());
-
+            usr.setIndicaciones(usuario.getIndicaciones());
             usuarioRepository.save(usr);
             return ResponseEntity.ok(usuario); 
         }catch(Exception e){
