@@ -1,5 +1,7 @@
 package com.example.miapp.model;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,6 +28,7 @@ public class OrdenItem {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "orden_id", nullable = false)
+    @JsonBackReference
     private Orden orden;
 
     @ManyToOne(fetch = FetchType.LAZY)

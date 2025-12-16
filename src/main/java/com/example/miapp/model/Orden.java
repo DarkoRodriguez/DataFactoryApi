@@ -2,6 +2,8 @@ package com.example.miapp.model;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -57,6 +59,7 @@ public class Orden {
     private String indicaciones;
 
     @OneToMany(mappedBy = "orden", cascade = CascadeType.ALL , orphanRemoval = true)
+    @JsonManagedReference
     private List<OrdenItem> items;
 
     public void setItems(List<OrdenItem> items) {
@@ -65,6 +68,14 @@ public class Orden {
         for(OrdenItem item : items) {  item.setOrden(this); // <-- ¡ESTA LÍNEA ES LA MAGIA!
         }
     }
-}
+    }
+    public void addOrdenItem(OrdenItem item) {
+        items.add(item);
+        item.setOrden(this);
+    }
+    public void removeOrdenItem(OrdenItem item) {
+        items.remove(item);
+        item.setOrden(null);
+    }
 }
 
